@@ -29,7 +29,7 @@
 #include "sql_cmd.h"
 #include "sql_alter.h"                // Alter_info
 #include "sql_window.h"
-
+#include "sql_trigger.h"
 
 /* YACC and LEX Definitions */
 
@@ -1200,6 +1200,21 @@ struct st_trg_chistics
 {
   enum trg_action_time_type action_time;
   enum trg_event_type event;
+
+  /**
+    FOLLOWS or PRECEDES as specified in the CREATE TRIGGER statement.
+  */
+  enum trigger_order_type ordering_clause;
+
+  /**
+    Trigger name referenced in the FOLLOWS/PRECEDES clause of the
+    CREATE TRIGGER statement.
+  */
+  LEX_STRING anchor_trigger_name;
+
+  const char *ordering_clause_begin;
+  const char *ordering_clause_end;
+
 };
 
 extern sys_var *trg_new_row_fake_var;
@@ -3278,7 +3293,8 @@ void end_lex_with_single_table(THD *thd, TABLE *table, LEX *old_lex);
 int init_lex_with_single_table(THD *thd, TABLE *table, LEX *lex);
 extern int MYSQLlex(union YYSTYPE *yylval, THD *thd);
 
-extern void trim_whitespace(CHARSET_INFO *cs, LEX_STRING *str);
+extern void trim_whitespace(CHARSET_INFO *cs, LEX_STRING *str,
+                            uint *prefix_removed);
 
 extern bool is_lex_native_function(const LEX_STRING *name);
 
